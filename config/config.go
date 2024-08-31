@@ -9,6 +9,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
+// Define environment variables
 var (
 	dbUser     = os.Getenv("DB_USER")
 	dbPassword = os.Getenv("DB_PASSWORD")
@@ -16,24 +17,35 @@ var (
 	dbHost     = os.Getenv("DB_HOST")
 	dbPort     = os.Getenv("DB_PORT")
 )
+
 var DB *sqlx.DB
 
+// LoadConfig checks if all necessary environment variables are set
 func LoadConfig() {
 	if dbUser == "" || dbPassword == "" || dbName == "" || dbHost == "" || dbPort == "" {
-		log.Fatal("Missing environment variables")
+		log.Fatalf("Missing environment variables")
 	}
+	// Print environment variables for debugging purposes
+	log.Printf("DB_USER: %s", dbUser)
+	log.Printf("DB_PASSWORD: %s", dbPassword)
+	log.Printf("DB_NAME: %s", dbName)
+	log.Printf("DB_HOST: %s", dbHost)
+	log.Printf("DB_PORT: %s", dbPort)
 }
 
+// DBConfig returns the connection string for the database
 func DBConfig() string {
-	return "host=" + dbHost + " port=" + dbPort + " user=" + dbUser + " dbname=" + dbName + " password=" + dbPassword + " sslmode=disable"
+	return fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=disable",
+		dbHost, dbPort, dbUser, dbName, dbPassword)
 }
+
+// InitDB initializes and returns the database connection
 func InitDB() *sqlx.DB {
-	connStr := fmt.Sprintf("user=%s dbname=%s sslmode=disable",
-		os.Getenv("DB_USER"), os.Getenv("DB_NAME"))
+	connStr := DBConfig()
 
 	db, err := sqlx.Connect("postgres", connStr)
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatal("Failed to connect to the database:", err)
 	}
 
 	DB = db
