@@ -1,24 +1,48 @@
 package config
 
 import (
+	"fmt"
 	"log"
-	"os"
+
+	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 )
 
-var (
-	dbUser     = os.Getenv("DB_USER")
-	dbPassword = os.Getenv("DB_PASSWORD")
-	dbName     = os.Getenv("DB_NAME")
-	dbHost     = os.Getenv("DB_HOST")
-	dbPort     = os.Getenv("DB_PORT")
-)
+// DatabaseConfig holds the database configuration parameters
+type DatabaseConfig struct {
+	User     string
+	Password string
+	Name     string
+	Host     string
+	Port     string
+}
 
-func LoadConfig() {
-	if dbUser == "" || dbPassword == "" || dbName == "" || dbHost == "" || dbPort == "" {
-		log.Fatal("Missing environment variables")
+var DB *sqlx.DB
+
+// NewDatabaseConfig creates a new instance of DatabaseConfig with the given values
+func NewDatabaseConfig(user, password, name, host, port string) *DatabaseConfig {
+	return &DatabaseConfig{
+		User:     user,
+		Password: password,
+		Name:     name,
+		Host:     host,
+		Port:     port,
 	}
 }
 
-func DBConfig() string {
-	return "host=" + dbHost + " port=" + dbPort + " user=" + dbUser + " dbname=" + dbName + " password=" + dbPassword + " sslmode=disable"
+// DBConfig returns the connection string for the database
+func (config *DatabaseConfig) DBConfig() string {
+	return fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=disable",
+		config.Host, config.Port, config.User, config.Name, config.Password)
+}
+
+// InitDB initializes and returns the database connection
+func InitDB(config *DatabaseConfig) *sqlx.DB {
+	connStr := config.DBConfig()
+	db, err := sqlx.Connect("postgres", connStr)
+	if err != nil {
+		log.Fatalln("Failed to connect to the database:", err)
+	}
+	DB = db
+	return db
 }
