@@ -156,3 +156,11 @@ git push origin feature/your-feature-name
 - Go to the original repository on GitHub.
 - Click the "New Pull Request" button.
 - Select the branch you just pushed to and submit the pull request.
+
+## Screenshots
+
+### Home Page
+![Home Page](./assets/homepage.png)
+
+### Contact Page
+![Contact Page](./assets/contact.png)
